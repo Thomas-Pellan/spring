@@ -1,0 +1,12 @@
+package com.plebicom.persistence.repository;
+
+import org.springframework.data.repository.CrudRepository;
+
+import com.plebicom.persistence.entity.AccessRight;
+import com.plebicom.persistence.entity.User;
+
+public interface AccessRightRepository extends CrudRepository<AccessRight, Integer> {
+
+	public AccessRight findByUser(User user);
+
+}
