@@ -72,7 +72,7 @@ public class BrandService {
 		
 		if(existing == null)
 		{
-			return String.format("Article does not exists with the name %s", dto.getName());
+			return String.format("Brand does not exists with the name %s", dto.getName());
 		}
 		
 		brandRepository.delete(existing);
