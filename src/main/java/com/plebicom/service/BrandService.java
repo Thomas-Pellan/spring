@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import com.plebicom.persistence.entity.Brand;
 import com.plebicom.persistence.repository.BrandRepository;
-import com.plebicom.site.dto.ArticleDTO;
 import com.plebicom.site.dto.BrandDTO;
 import com.plebicom.site.factory.BrandFactory;
 
