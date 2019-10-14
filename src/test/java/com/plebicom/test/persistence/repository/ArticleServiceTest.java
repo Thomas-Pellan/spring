@@ -56,6 +56,13 @@ public class ArticleServiceTest {
 		article1.setName("initTest");
 		article1.setBrand(persisted);
 		articleRepository.save(article1);
+		
+		// Making sure the deleted article does not exists
+		Article articleToDelete = articleRepository.findByName("article for delete");
+		if(articleToDelete != null)
+		{
+			articleRepository.delete(articleToDelete);
+		}
     }
 	
 	 @Test
@@ -111,6 +118,38 @@ public class ArticleServiceTest {
          .andExpect(status().isOk())
          .andExpect(jsonPath("$.type", is("ERROR")))
          .andExpect(jsonPath("$.message").isNotEmpty())
+         .andExpect(jsonPath("$.data").isEmpty());
+	 }
+	 
+	 @Test
+	 public void testDeleteArticle() throws Exception {
+		 
+		 String testJson = "{\"name\" : \"article for delete\",\"content\" : \"tdgssg\",\"brand\" : {\"name\" : \"initTestBrand\"}}";
+		 
+		 mockMvc.perform(post("/articles/create").content(testJson).contentType(MediaType.APPLICATION_JSON_UTF8))
+         .andDo(print())
+         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+         .andExpect(status().isOk())
+         .andExpect(jsonPath("$.type", is("SUCCESS")))
+         .andExpect(jsonPath("$.message").isEmpty())
+         .andExpect(jsonPath("$.data").isNotEmpty());
+		 
+		 // Deleting article
+		 mockMvc.perform(post("/articles/delete").content(testJson).contentType(MediaType.APPLICATION_JSON_UTF8))
+         .andDo(print())
+         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+         .andExpect(status().isOk())
+         .andExpect(jsonPath("$.type", is("SUCCESS")))
+         .andExpect(jsonPath("$.message").isEmpty())
+         .andExpect(jsonPath("$.data").isEmpty());
+		 
+		 // Article should not exist
+		 mockMvc.perform(get("/articles/name?name=article for delete"))
+         .andDo(print())
+         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+         .andExpect(status().isOk())
+         .andExpect(jsonPath("$.type", is("SUCCESS")))
+         .andExpect(jsonPath("$.message").isEmpty())
          .andExpect(jsonPath("$.data").isEmpty());
 	 }
 	 

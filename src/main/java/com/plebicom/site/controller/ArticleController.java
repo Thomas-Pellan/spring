@@ -40,7 +40,7 @@ public class ArticleController {
 	@PostMapping(path="/delete")
 	public @ResponseBody ResponseDTO deleteArticle (@RequestBody ArticleDTO article) {
 
-		Object returnValue = articleService.createArticle(article);
+		Object returnValue = articleService.removeArticle(article);
 		
 		if(returnValue instanceof String)
 		{

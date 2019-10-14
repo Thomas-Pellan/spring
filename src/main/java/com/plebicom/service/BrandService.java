@@ -61,7 +61,7 @@ public class BrandService {
 		return brandFactory.createDTOFromEntity(newBrand);
 	}
 	
-	public Object removeBrand(ArticleDTO dto) {
+	public Object removeBrand(BrandDTO dto) {
 		
 		if(dto == null)
 		{

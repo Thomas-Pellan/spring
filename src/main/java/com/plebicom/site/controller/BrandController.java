@@ -40,7 +40,7 @@ public class BrandController {
 	@PostMapping(path="/delete")
 	public @ResponseBody ResponseDTO deleteArticle (@RequestBody BrandDTO brand) {
 
-		Object returnValue = brandService.createBrand(brand);
+		Object returnValue = brandService.removeBrand(brand);
 		
 		if(returnValue instanceof String)
 		{
