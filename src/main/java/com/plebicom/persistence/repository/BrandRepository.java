@@ -6,6 +6,6 @@ import com.plebicom.persistence.entity.Brand;
 
 public interface BrandRepository extends CrudRepository<Brand, Integer> {
 
-	public Brand findByName(String name);
+	Brand findByName(String name);
 
 }

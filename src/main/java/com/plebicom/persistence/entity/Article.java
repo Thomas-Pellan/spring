@@ -15,6 +15,7 @@ import lombok.Data;
 public class Article {
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
+    @Column(name = "id")
     private Integer id;
 
     @Column(name = "name", unique = true)

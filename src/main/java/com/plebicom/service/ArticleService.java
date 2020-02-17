@@ -3,6 +3,7 @@ package com.plebicom.service;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import com.plebicom.site.exception.BusinessException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -46,19 +47,19 @@ public class ArticleService {
 		return articleFactory.createDTOFromEntity(article);
 	}
 	
-	public Object createArticle(ArticleDTO dto) {
+	public ArticleDTO createArticle(ArticleDTO dto) {
 		
 		String checkData = checkArticleData(dto);
 		if(checkData != null)
 		{
-			return checkData;
+			throw new BusinessException(checkData);
 		}
 		
 		Article existing = articleRepository.findByName(dto.getName());
 		
 		if(existing != null)
 		{
-			return String.format("Article already exists with the name %s", dto.getName());
+			throw new BusinessException( String.format("Article already exists with the name %s", dto.getName()));
 		}
 		
 		Article article = articleFactory.createEntityFromDTO(dto);
@@ -70,23 +71,21 @@ public class ArticleService {
 		return articleFactory.createDTOFromEntity(newArticle);
 	}
 	
-	public Object removeArticle(ArticleDTO dto) {
+	public void removeArticle(ArticleDTO dto) {
 		
 		if(dto == null)
 		{
-			return "No data";
+			throw new BusinessException("No data");
 		}
 		
 		Article existing = articleRepository.findByName(dto.getName());
 		
 		if(existing == null)
 		{
-			return String.format("Article does not exists with the name %s", dto.getName());
+			throw new BusinessException(String.format("Article does not exists with the name %s", dto.getName()));
 		}
 		
 		articleRepository.delete(existing);
-		
-		return null;
 	}
 	
 	private String checkArticleData(ArticleDTO dto) 

@@ -8,23 +8,34 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.plebicom.site.exception.BusinessException;
+import com.sun.media.jfxmedia.logging.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.NestedCheckedException;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.plebicom.persistence.entity.Brand;
 import com.plebicom.persistence.repository.BrandRepository;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.web.util.NestedServletException;
+
+import java.util.Optional;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
+@Slf4j
 public class BrandServiceTest {
 	
 	@Autowired
@@ -60,10 +71,7 @@ public class BrandServiceTest {
         .andDo(print())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.type", is("SUCCESS")))
-        .andExpect(jsonPath("$.data").isArray())
-        .andExpect(jsonPath("$.message").isEmpty())
-        .andExpect(jsonPath("$.data").isNotEmpty());
+        .andExpect(jsonPath("$").isNotEmpty());
 	 }
 	
 	@Test
@@ -73,17 +81,12 @@ public class BrandServiceTest {
         .andDo(print())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.type", is("SUCCESS")))
-        .andExpect(jsonPath("$.message").isEmpty())
-        .andExpect(jsonPath("$.data").isNotEmpty());
+        .andExpect(jsonPath("$").isNotEmpty());
 		 
 		 mockMvc.perform(get("/brands/name?name=thisshouldnotexist"))
         .andDo(print())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.type", is("SUCCESS")))
-        .andExpect(jsonPath("$.message").isEmpty())
-        .andExpect(jsonPath("$.data").isEmpty());
+				 .andExpect(jsonPath("$").doesNotExist());
 	 }
 	
 	@Test
@@ -95,18 +98,18 @@ public class BrandServiceTest {
         .andDo(print())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.type", is("SUCCESS")))
-        .andExpect(jsonPath("$.message").isEmpty())
-        .andExpect(jsonPath("$.data").isNotEmpty());
+        .andExpect(jsonPath("$").isNotEmpty());
 		 
 		 //Trying to create again with same name => error
-		 mockMvc.perform(post("/brands/create").content(testJson).contentType(MediaType.APPLICATION_JSON_UTF8))
-        .andDo(print())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.type", is("ERROR")))
-        .andExpect(jsonPath("$.message").isNotEmpty())
-        .andExpect(jsonPath("$.data").isEmpty());
+		try {
+			mockMvc.perform(post("/brands/create").content(testJson).contentType(MediaType.APPLICATION_JSON_UTF8))
+					.andDo(print())
+					.andExpect(status().isOk());
+		}
+		catch(NestedServletException e)
+		{
+			Assert.assertEquals(e.getCause().getMessage(), "Brand already exists with the name brand value that does not exists");
+		}
 	 }
 	
 	@Test
@@ -118,27 +121,19 @@ public class BrandServiceTest {
         .andDo(print())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.type", is("SUCCESS")))
-        .andExpect(jsonPath("$.message").isEmpty())
-        .andExpect(jsonPath("$.data").isNotEmpty());
+        .andExpect(jsonPath("$").isNotEmpty());
 		 
 		 // Deleting article
 		 mockMvc.perform(post("/brands/delete").content(testJson).contentType(MediaType.APPLICATION_JSON_UTF8))
         .andDo(print())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.type", is("SUCCESS")))
-        .andExpect(jsonPath("$.message").isEmpty())
-        .andExpect(jsonPath("$.data").isEmpty());
+				 .andExpect(jsonPath("$").doesNotExist());
 		 
 		 // Article should not exist
 		 mockMvc.perform(get("/brands/name?name=brand for delete"))
         .andDo(print())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.type", is("SUCCESS")))
-        .andExpect(jsonPath("$.message").isEmpty())
-        .andExpect(jsonPath("$.data").isEmpty());
+				 .andExpect(jsonPath("$").doesNotExist());
 	 }
 	
 	@After 

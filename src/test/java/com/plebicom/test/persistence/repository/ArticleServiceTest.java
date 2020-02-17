@@ -1,6 +1,7 @@
 package com.plebicom.test.persistence.repository;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,6 +16,7 @@ import com.plebicom.persistence.entity.Article;
 import com.plebicom.persistence.entity.Brand;
 import com.plebicom.persistence.repository.ArticleRepository;
 import com.plebicom.persistence.repository.BrandRepository;
+import org.springframework.web.util.NestedServletException;
 
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -72,10 +74,7 @@ public class ArticleServiceTest {
          .andDo(print())
          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
          .andExpect(status().isOk())
-         .andExpect(jsonPath("$.type", is("SUCCESS")))
-         .andExpect(jsonPath("$.data").isArray())
-         .andExpect(jsonPath("$.message").isEmpty())
-         .andExpect(jsonPath("$.data").isNotEmpty());
+         .andExpect(jsonPath("$").isNotEmpty());
 	 }
 	 
 	 @Test
@@ -85,17 +84,12 @@ public class ArticleServiceTest {
          .andDo(print())
          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
          .andExpect(status().isOk())
-         .andExpect(jsonPath("$.type", is("SUCCESS")))
-         .andExpect(jsonPath("$.message").isEmpty())
-         .andExpect(jsonPath("$.data").isNotEmpty());
+         .andExpect(jsonPath("$").isNotEmpty());
 		 
 		 mockMvc.perform(get("/articles/name?name=thisshouldnotexist"))
          .andDo(print())
-         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
          .andExpect(status().isOk())
-         .andExpect(jsonPath("$.type", is("SUCCESS")))
-         .andExpect(jsonPath("$.message").isEmpty())
-         .andExpect(jsonPath("$.data").isEmpty());
+		 .andExpect(jsonPath("$").doesNotExist());
 	 }
 	 
 	 @Test
@@ -107,18 +101,18 @@ public class ArticleServiceTest {
          .andDo(print())
          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
          .andExpect(status().isOk())
-         .andExpect(jsonPath("$.type", is("SUCCESS")))
-         .andExpect(jsonPath("$.message").isEmpty())
-         .andExpect(jsonPath("$.data").isNotEmpty());
+         .andExpect(jsonPath("$").isNotEmpty());
 		 
 		 //Trying to create again with same name => error
-		 mockMvc.perform(post("/articles/create").content(testJson).contentType(MediaType.APPLICATION_JSON_UTF8))
-         .andDo(print())
-         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-         .andExpect(status().isOk())
-         .andExpect(jsonPath("$.type", is("ERROR")))
-         .andExpect(jsonPath("$.message").isNotEmpty())
-         .andExpect(jsonPath("$.data").isEmpty());
+		 try {
+			 mockMvc.perform(post("/articles/create").content(testJson).contentType(MediaType.APPLICATION_JSON_UTF8))
+					 .andDo(print())
+					 .andExpect(status().isOk());
+		 }
+		 catch(NestedServletException e)
+		 {
+			 Assert.assertEquals(e.getCause().getMessage(), "Article already exists with the name new value that does not exists");
+		 }
 	 }
 	 
 	 @Test
@@ -130,27 +124,19 @@ public class ArticleServiceTest {
          .andDo(print())
          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
          .andExpect(status().isOk())
-         .andExpect(jsonPath("$.type", is("SUCCESS")))
-         .andExpect(jsonPath("$.message").isEmpty())
-         .andExpect(jsonPath("$.data").isNotEmpty());
+         .andExpect(jsonPath("$").isNotEmpty());
 		 
 		 // Deleting article
 		 mockMvc.perform(post("/articles/delete").content(testJson).contentType(MediaType.APPLICATION_JSON_UTF8))
          .andDo(print())
-         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
          .andExpect(status().isOk())
-         .andExpect(jsonPath("$.type", is("SUCCESS")))
-         .andExpect(jsonPath("$.message").isEmpty())
-         .andExpect(jsonPath("$.data").isEmpty());
+				 .andExpect(jsonPath("$").doesNotExist());
 		 
 		 // Article should not exist
 		 mockMvc.perform(get("/articles/name?name=article for delete"))
          .andDo(print())
-         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
          .andExpect(status().isOk())
-         .andExpect(jsonPath("$.type", is("SUCCESS")))
-         .andExpect(jsonPath("$.message").isEmpty())
-         .andExpect(jsonPath("$.data").isEmpty());
+				 .andExpect(jsonPath("$").doesNotExist());
 	 }
 	 
 	 @After 
@@ -166,6 +152,12 @@ public class ArticleServiceTest {
 		 if(article2 != null)
 		 {
 			 articleRepository.delete(article2);
+		 }
+
+		 Article article3 = articleRepository.findByName("article for delete");
+		 if(article3 != null)
+		 {
+			 articleRepository.delete(article3);
 		 }
 		 
 		 Brand brand1 = brandRepository.findByName("initTestBrand");
