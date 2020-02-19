@@ -1,8 +1,10 @@
 package com.plebicom.site.controller;
 
+import com.plebicom.site.dto.ApiResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,6 +17,7 @@ import com.plebicom.site.dto.ArticleDTO;
 
 @Controller
 @RequestMapping(path="/articles")
+@CrossOrigin
 public class ArticleController {
 	
 	@Autowired
@@ -33,7 +36,7 @@ public class ArticleController {
 
 	@GetMapping(path="/all")
 	public @ResponseBody ResponseEntity getAllArticles() {
-		return ResponseEntity.ok(articleService.getAllArticles());
+		return ResponseEntity.ok(new ApiResponseDTO<>(articleService.getAllArticles()));
 	}
 	
 	@GetMapping(path="/name")
