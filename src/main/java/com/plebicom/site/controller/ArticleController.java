@@ -41,6 +41,6 @@ public class ArticleController {
 	
 	@GetMapping(path="/name")
 	public @ResponseBody ResponseEntity getArticleByName(@RequestParam String name) {
-		return ResponseEntity.ok(articleService.getArticleByName(name));
+		return ResponseEntity.ok(new ApiResponseDTO<>(articleService.getArticleByName(name)));
 	}
 }

@@ -1,5 +1,6 @@
 package com.plebicom.site.controller;
 
+import com.plebicom.site.dto.ApiResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -36,11 +37,11 @@ public class BrandController {
 
 	@GetMapping(path="/all")
 	public @ResponseBody ResponseEntity getAllBrands() {
-		return ResponseEntity.ok(brandService.getAllBrands());
+		return ResponseEntity.ok(new ApiResponseDTO<>(brandService.getAllBrands()));
 	}
 	
 	@GetMapping(path="/name")
 	public @ResponseBody ResponseEntity getBrandByName(@RequestParam String name) {
-		return ResponseEntity.ok(brandService.getBrandByName(name));
+		return ResponseEntity.ok(new ApiResponseDTO<>(brandService.getBrandByName(name)));
 	}
 }
