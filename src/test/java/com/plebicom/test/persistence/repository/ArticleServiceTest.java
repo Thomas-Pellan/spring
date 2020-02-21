@@ -1,5 +1,9 @@
 package com.plebicom.test.persistence.repository;
 
+import com.plebicom.persistence.entity.Article;
+import com.plebicom.persistence.entity.Brand;
+import com.plebicom.persistence.repository.ArticleRepository;
+import com.plebicom.persistence.repository.BrandRepository;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -11,18 +15,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-
-import com.plebicom.persistence.entity.Article;
-import com.plebicom.persistence.entity.Brand;
-import com.plebicom.persistence.repository.ArticleRepository;
-import com.plebicom.persistence.repository.BrandRepository;
 import org.springframework.web.util.NestedServletException;
 
-import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
