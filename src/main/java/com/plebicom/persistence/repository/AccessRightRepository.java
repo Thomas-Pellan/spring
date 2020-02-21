@@ -7,6 +7,6 @@ import com.plebicom.persistence.entity.User;
 
 public interface AccessRightRepository extends CrudRepository<AccessRight, Integer> {
 
-	public AccessRight findByUser(User user);
+	AccessRight findByUser(User user);
 
 }

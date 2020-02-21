@@ -86,7 +86,7 @@ public class BrandServiceTest {
 		 mockMvc.perform(get("/brands/name?name=thisshouldnotexist"))
         .andDo(print())
         .andExpect(status().isOk())
-				 .andExpect(jsonPath("$").doesNotExist());
+				 .andExpect(jsonPath("$").isEmpty());
 	 }
 	
 	@Test
@@ -133,7 +133,7 @@ public class BrandServiceTest {
 		 mockMvc.perform(get("/brands/name?name=brand for delete"))
         .andDo(print())
         .andExpect(status().isOk())
-				 .andExpect(jsonPath("$").doesNotExist());
+				 .andExpect(jsonPath("$").isEmpty());
 	 }
 	
 	@After 

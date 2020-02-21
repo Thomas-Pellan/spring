@@ -6,6 +6,6 @@ import com.plebicom.persistence.entity.Article;
 
 public interface ArticleRepository extends CrudRepository<Article, Integer> {
 
-	public Article findByName(String name);
+	Article findByName(String name);
 
 }

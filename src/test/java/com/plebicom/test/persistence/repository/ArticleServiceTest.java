@@ -89,7 +89,7 @@ public class ArticleServiceTest {
 		 mockMvc.perform(get("/articles/name?name=thisshouldnotexist"))
          .andDo(print())
          .andExpect(status().isOk())
-		 .andExpect(jsonPath("$").doesNotExist());
+		 .andExpect(jsonPath("$").isEmpty());
 	 }
 	 
 	 @Test
@@ -136,7 +136,7 @@ public class ArticleServiceTest {
 		 mockMvc.perform(get("/articles/name?name=article for delete"))
          .andDo(print())
          .andExpect(status().isOk())
-				 .andExpect(jsonPath("$").doesNotExist());
+				 .andExpect(jsonPath("$").isEmpty());
 	 }
 	 
 	 @After 
