@@ -1,9 +1,8 @@
 package com.plebicom.service;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.plebicom.service.dto.OpenFoodApiArticleDTO;
 import com.plebicom.service.dto.OpenFoodApiDTO;
+import com.plebicom.service.factory.OpenApiDTOFactory;
 import com.plebicom.site.exception.BusinessException;
 import com.plebicom.util.QueryUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +30,9 @@ public class ImporterService {
     private ConfigurationService configurationService;
 
     @Autowired
+    private OpenApiDTOFactory openApiDTOFactory;
+
+    @Autowired
     private QueryUtil queryUtil;
 
     public String getFileList(){
@@ -55,7 +57,7 @@ public class ImporterService {
 
             //Get the file, unzip and parse it's elements
             List<String> fileContentList = new ArrayList<>();
-            try (InputStream is = new GZIPInputStream(queryUtil.getFileData(urlFileQuery + fileName, fileName)))
+            try (InputStream is = new GZIPInputStream(queryUtil.getFileData(urlFileQuery + fileName)))
             {
                 String fileContent = new String(is.readAllBytes(), StandardCharsets.UTF_8);
                 fileContentList = Arrays.asList(fileContent.split(OPENAPI_FILE_SEPARATOR));
@@ -63,26 +65,20 @@ public class ImporterService {
                 log.error(String.format("getFileList : error while getting %s content, data not imported", fileName), e);
             }
 
+            //Empty file or no data, skip
             if(CollectionUtils.isEmpty(fileContentList)){
                 continue;
             }
 
             //Parse the line content to get usable Objects
-            List<OpenFoodApiArticleDTO> newArticles = fileContentList.stream().map(line ->getArticleFromString(line)).filter(o -> o != null).collect(Collectors.toList());
+            List<OpenFoodApiArticleDTO> newArticles = fileContentList
+                    .stream()
+                    .map(line -> openApiDTOFactory.getOpenFoodApiArticleFromString(line))
+                    .filter(o -> o != null)
+                    .collect(Collectors.toList());
             dto.getArticles().addAll(newArticles);
         }
 
-        return null;
-    }
-
-    private OpenFoodApiArticleDTO getArticleFromString(String articleStr){
-        final Gson gson = new GsonBuilder().create();
-        try{
-            return gson.fromJson(articleStr, OpenFoodApiArticleDTO.class);
-        }
-        catch(Exception e){
-            log.debug(articleStr);
-        }
         return null;
     }
 }

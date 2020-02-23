@@ -18,14 +18,14 @@ public class Article {
     @Column(name = "id")
     private Integer id;
 
-    @Column(name = "name", unique = true)
+    @Column(name = "name", unique = true, nullable = false)
     private String name;
     
     @ManyToOne
     @JoinColumn(name="brand")
     private Brand brand;
 
-    @Column(name = "description", nullable=true)
+    @Column(name = "description")
     private String description;
     
 }
