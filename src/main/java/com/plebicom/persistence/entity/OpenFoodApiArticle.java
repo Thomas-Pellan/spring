@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
-public class OpenFoodApiArticle implements Serializable {
+public class OpenFoodApiArticle {
 
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)

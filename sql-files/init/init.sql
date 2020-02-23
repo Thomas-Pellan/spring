@@ -33,6 +33,14 @@ CREATE TABLE configuration (
       UNIQUE KEY(property_key)
 ) ENGINE=INNODB;
 
+CREATE TABLE open_api_article (
+      id INT AUTO_INCREMENT NOT NULL,
+      ean_code VARCHAR (100) NOT NULL,
+      last_modified DATE NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY(ean_code)
+) ENGINE=INNODB;
+
 -- Init with mandatory values for this to work
 INSERT IGNORE INTO configuration (property_key, property_value)
 VALUES ("openFood_url_list" , "https://static.openfoodfacts.org/data/delta/index.txt");

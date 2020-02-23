@@ -2,7 +2,7 @@ package com.plebicom.service;
 
 import com.plebicom.service.dto.OpenFoodApiArticleDTO;
 import com.plebicom.service.dto.OpenFoodApiDTO;
-import com.plebicom.service.factory.OpenApiDTOFactory;
+import com.plebicom.service.factory.OpenApiArticleFactory;
 import com.plebicom.site.exception.BusinessException;
 import com.plebicom.util.QueryUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +30,7 @@ public class ImporterService {
     private ConfigurationService configurationService;
 
     @Autowired
-    private OpenApiDTOFactory openApiDTOFactory;
+    private OpenApiArticleFactory openApiArticleFactory;
 
     @Autowired
     private QueryUtil queryUtil;
@@ -73,11 +73,14 @@ public class ImporterService {
             //Parse the line content to get usable Objects
             List<OpenFoodApiArticleDTO> newArticles = fileContentList
                     .stream()
-                    .map(line -> openApiDTOFactory.getOpenFoodApiArticleFromString(line))
+                    .map(line -> openApiArticleFactory.getOpenFoodApiArticleFromString(line))
                     .filter(o -> o != null)
                     .collect(Collectors.toList());
             dto.getArticles().addAll(newArticles);
         }
+
+        //Persisting the articles
+        openApiArticleFactory.createOrMergeOpenApiArticleFromDto(dto.getArticles());
 
         return null;
     }
