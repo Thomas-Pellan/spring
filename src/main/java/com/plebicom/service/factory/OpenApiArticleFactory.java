@@ -15,12 +15,15 @@ import org.springframework.util.CollectionUtils;
 
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class OpenApiArticleFactory {
+
+    private static final int SAVE_DATA_MODULO = 1000;
 
     @Autowired
     private OpenFoodApiArticleRepository openFoodApiArticleRepository;
@@ -30,11 +33,26 @@ public class OpenApiArticleFactory {
             return null;
         }
 
-        return dtos
-                .stream()
-                .filter(dto -> dto != null)
-                .map(dto -> createOrMergeOpenApiArticleFromDto(dto))
-                .collect(Collectors.toList());
+        //Split save by groups to avoid too much persistence calls on huge data volumes
+        List<OpenFoodApiArticle> articles = new ArrayList<>();
+
+        dtos.removeIf(dto -> dto == null);
+
+        List<OpenFoodApiArticleDTO> tmpDtos = new ArrayList<>();
+        for(int i = 0; i < dtos.size(); i++){
+
+            tmpDtos.add(dtos.get(i));
+            if(i%SAVE_DATA_MODULO == 0 || (dtos.size()-i) < SAVE_DATA_MODULO){
+                articles.addAll(tmpDtos
+                        .stream()
+                        .map(dto -> createOrMergeOpenApiArticleFromDto(dto))
+                        .collect(Collectors.toList())
+                );
+                tmpDtos = new ArrayList<>();
+            }
+        }
+
+        return articles;
     }
 
     public OpenFoodApiArticle createOrMergeOpenApiArticleFromDto(OpenFoodApiArticleDTO dto){

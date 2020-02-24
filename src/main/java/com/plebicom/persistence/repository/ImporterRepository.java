@@ -1,12 +1,10 @@
 package com.plebicom.persistence.repository;
 
+import com.plebicom.persistence.entity.Importer;
 import org.springframework.data.repository.CrudRepository;
-
-import com.plebicom.persistence.entity.User;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface UserRepository extends CrudRepository<User, Integer> {
+public interface ImporterRepository extends CrudRepository<Importer, Integer> {
 
-	User findByUsername(String username);
 }

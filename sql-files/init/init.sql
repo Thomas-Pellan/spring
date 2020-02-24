@@ -9,7 +9,7 @@ CREATE TABLE brand (
 CREATE TABLE article (
      id INT AUTO_INCREMENT NOT NULL,
      name VARCHAR (50) NOT NULL,
-     brand INT,s
+     brand INT,
      description VARCHAR(255) DEFAULT NULL,
      PRIMARY KEY (id),
      UNIQUE KEY(name),
@@ -36,9 +36,28 @@ CREATE TABLE configuration (
 CREATE TABLE open_api_article (
       id INT AUTO_INCREMENT NOT NULL,
       ean_code VARCHAR (100) NOT NULL,
-      last_modified DATE NOT NULL,
+      last_modified DATETIME NOT NULL,
       PRIMARY KEY (id),
       UNIQUE KEY(ean_code)
+) ENGINE=INNODB;
+
+CREATE TABLE importer (
+      id INT AUTO_INCREMENT NOT NULL,
+      status VARCHAR (100) NOT NULL,
+      start_date DATETIME NOT NULL,
+      end_date DATETIME DEFAULT NULL,
+      log VARCHAR (250) DEFAULT NULL,
+      PRIMARY KEY (id)
+) ENGINE=INNODB;
+
+CREATE TABLE importer_file (
+      id INT AUTO_INCREMENT NOT NULL,
+      name VARCHAR (100) NOT NULL,
+      status VARCHAR (100) NOT NULL,
+      md5_checksum VARCHAR (250) DEFAULT NULL,
+      importer INT NOT NULL,
+      PRIMARY KEY (id),
+      FOREIGN KEY (importer) REFERENCES importer(id)
 ) ENGINE=INNODB;
 
 -- Init with mandatory values for this to work

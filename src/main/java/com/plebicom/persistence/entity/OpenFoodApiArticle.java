@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
+@Table(name = "open_api_article")
 public class OpenFoodApiArticle {
 
     @Id

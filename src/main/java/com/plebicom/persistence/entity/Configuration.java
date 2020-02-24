@@ -7,9 +7,11 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
 @Data
+@Table(name = "configuration")
 public class Configuration {
 
 	@Id
@@ -20,6 +22,6 @@ public class Configuration {
 	@Column(name = "property_key", unique = true)
     private String key;
 
-    @Column(name = "property_value", unique = true)
+    @Column(name = "property_value")
     private String value;
 }
