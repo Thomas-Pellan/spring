@@ -5,11 +5,12 @@ import lombok.Data;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Collection;
 
 @Entity
 @Data
-@Table(name = "open_api_article")
-public class OpenFoodApiArticle {
+@Table(name = "open_article")
+public class OpenFoodArticle {
 
     @Id
     @GeneratedValue(strategy= GenerationType.AUTO)
@@ -19,6 +20,15 @@ public class OpenFoodApiArticle {
     @Column(name = "ean_code", nullable = false)
     private String eanCode;
 
-    @Column(name = "last_modified")
+    @Column(name = "product_name")
+    private String productName;
+
+    @Column(name = "created", nullable = false)
+    private LocalDateTime created;
+
+    @Column(name = "last_modified", nullable = false)
     private LocalDateTime lastModified;
+
+    @Column(name = "nutrition_grade")
+    private String nutritionGrade;
 }

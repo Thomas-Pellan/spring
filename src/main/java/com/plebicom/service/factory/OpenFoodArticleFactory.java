@@ -3,9 +3,9 @@ package com.plebicom.service.factory;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
-import com.plebicom.persistence.entity.OpenFoodApiArticle;
-import com.plebicom.persistence.repository.OpenFoodApiArticleRepository;
-import com.plebicom.service.ConfigurationService;
+import com.plebicom.persistence.entity.OpenFoodArticle;
+import com.plebicom.persistence.entity.OpenFoodIngredient;
+import com.plebicom.persistence.repository.OpenFoodArticleRepository;
 import com.plebicom.service.dto.OpenFoodApiArticleDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -21,20 +21,26 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public class OpenApiArticleFactory {
+public class OpenFoodArticleFactory {
 
     private static final int SAVE_DATA_MODULO = 1000;
 
     @Autowired
-    private OpenFoodApiArticleRepository openFoodApiArticleRepository;
+    private OpenFoodArticleRepository openFoodArticleRepository;
 
-    public List<OpenFoodApiArticle> createOrMergeOpenApiArticleFromDto(List<OpenFoodApiArticleDTO> dtos){
+    @Autowired
+    private OpenFoodIngredientFactory openFoodIngredientFactory;
+
+    @Autowired
+    private OpenFoodIngredientRankingFactory openFoodIngredientRankingFactory;
+
+    public List<OpenFoodArticle> createOrMergeOpenApiArticleFromDto(List<OpenFoodApiArticleDTO> dtos){
         if(CollectionUtils.isEmpty(dtos)){
             return null;
         }
 
         //Split save by groups to avoid too much persistence calls on huge data volumes
-        List<OpenFoodApiArticle> articles = new ArrayList<>();
+        List<OpenFoodArticle> articles = new ArrayList<>();
 
         dtos.removeIf(dto -> dto == null);
 
@@ -55,14 +61,14 @@ public class OpenApiArticleFactory {
         return articles;
     }
 
-    public OpenFoodApiArticle createOrMergeOpenApiArticleFromDto(OpenFoodApiArticleDTO dto){
+    public OpenFoodArticle createOrMergeOpenApiArticleFromDto(OpenFoodApiArticleDTO dto){
 
         if(dto == null){
             return null;
         }
 
-        OpenFoodApiArticle article = new OpenFoodApiArticle();
-        OpenFoodApiArticle existing = openFoodApiArticleRepository.findByEanCode(dto.getId());
+        OpenFoodArticle article = new OpenFoodArticle();
+        OpenFoodArticle existing = openFoodArticleRepository.findByEanCode(dto.getId());
         if(dto.getId() != null && existing != null){
             article = existing;
         }
@@ -76,7 +82,28 @@ public class OpenApiArticleFactory {
             article.setLastModified(instant.atZone(ZoneId.systemDefault()).toLocalDateTime());
         }
 
-        return openFoodApiArticleRepository.save(article);
+        if(StringUtils.isNotBlank(dto.getCreated())){
+            Instant instant = Instant.ofEpochMilli(Long.parseLong(dto.getCreated()));
+            article.setCreated(instant.atZone(ZoneId.systemDefault()).toLocalDateTime());
+        }
+
+        article.setProductName(dto.getProductName());
+        article.setNutritionGrade(dto.getNutritionGrade());
+
+        //Persist to get id for ingredient list
+        final OpenFoodArticle persistedArticle = openFoodArticleRepository.save(article);
+
+        //Create ingredients and their ranking in the article
+        if(!CollectionUtils.isEmpty(dto.getIngredients())){
+            dto.getIngredients()
+                .stream()
+                .forEach(ingr -> {
+                    OpenFoodIngredient ingredient = openFoodIngredientFactory.createOrMergeOpenApiIngredientFromDto(ingr);
+                    openFoodIngredientRankingFactory.createOrMergeOpenApiIngredientRanking(ingr.getRank(), persistedArticle, ingredient);
+                });
+        }
+
+        return openFoodArticleRepository.save(persistedArticle);
     }
 
     public OpenFoodApiArticleDTO getOpenFoodApiArticleFromString(String articleStr){

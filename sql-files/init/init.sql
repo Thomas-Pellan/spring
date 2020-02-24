@@ -33,12 +33,39 @@ CREATE TABLE configuration (
       UNIQUE KEY(property_key)
 ) ENGINE=INNODB;
 
-CREATE TABLE open_api_article (
+CREATE TABLE open_article (
       id INT AUTO_INCREMENT NOT NULL,
       ean_code VARCHAR (100) NOT NULL,
+      product_name VARCHAR (100) DEFAULT NULL,
+      created DATETIME NOT NULL,
       last_modified DATETIME NOT NULL,
+      nutrition_grade VARCHAR (100) DEFAULT NULL,
       PRIMARY KEY (id),
       UNIQUE KEY(ean_code)
+) ENGINE=INNODB;
+
+CREATE TABLE open_ingredient (
+     id INT AUTO_INCREMENT NOT NULL,
+     vegetarian BOOLEAN,
+     vegan BOOLEAN,
+     palm_oil BOOLEAN,
+     code VARCHAR (250),
+     label VARCHAR (250),
+     locale INT,
+     PRIMARY KEY (id),
+     UNIQUE KEY(code),
+     FOREIGN KEY (locale) REFERENCES locale(id)
+) ENGINE=INNODB;
+
+CREATE TABLE open_ingredient_ranking (
+     id INT AUTO_INCREMENT NOT NULL,
+     ranking INT,
+     open_article INT NOT NULL,
+     open_ingredient INT NOT NULL,
+     PRIMARY KEY (id),
+     UNIQUE KEY(ranking, open_article, open_ingredient),
+     FOREIGN KEY (open_article) REFERENCES open_article(id),
+     FOREIGN KEY (open_ingredient) REFERENCES open_ingredient(id)
 ) ENGINE=INNODB;
 
 CREATE TABLE importer (
@@ -58,6 +85,13 @@ CREATE TABLE importer_file (
       importer INT NOT NULL,
       PRIMARY KEY (id),
       FOREIGN KEY (importer) REFERENCES importer(id)
+) ENGINE=INNODB;
+
+CREATE TABLE locale (
+        id INT AUTO_INCREMENT NOT NULL,
+        label VARCHAR (4) NOT NULL,
+        PRIMARY KEY (id),
+        UNIQUE KEY(label)
 ) ENGINE=INNODB;
 
 -- Init with mandatory values for this to work

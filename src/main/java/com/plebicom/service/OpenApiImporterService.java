@@ -6,7 +6,7 @@ import com.plebicom.persistence.enums.FileImportStatus;
 import com.plebicom.persistence.enums.ImportStatus;
 import com.plebicom.service.dto.OpenFoodApiArticleDTO;
 import com.plebicom.service.dto.OpenFoodApiDTO;
-import com.plebicom.service.factory.OpenApiArticleFactory;
+import com.plebicom.service.factory.OpenFoodArticleFactory;
 import com.plebicom.util.QueryUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -18,7 +18,6 @@ import org.springframework.util.CollectionUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,7 +33,7 @@ public class OpenApiImporterService {
     private ConfigurationService configurationService;
 
     @Autowired
-    private OpenApiArticleFactory openApiArticleFactory;
+    private OpenFoodArticleFactory openFoodArticleFactory;
 
     @Autowired
     private ImporterService importerService;
@@ -45,7 +44,7 @@ public class OpenApiImporterService {
     @Autowired
     private QueryUtil queryUtil;
 
-    public void ImportOpenArticles(){
+    public Importer ImportOpenArticles(){
 
         //Init import information
         Importer importer = importerService.updateImporter(new Importer());
@@ -54,29 +53,30 @@ public class OpenApiImporterService {
         String[] fileList = getOpenApiFileList(importer);
 
         if(fileList == null){
-            return;
+            return importer;
         }
 
         String urlFileQuery = configurationService.getConfigurationValueByKeyAsString("openFood_url_file_query");
         if(StringUtils.isBlank(urlFileQuery)){
-            importerService.updateImporter(importer, ImportStatus.FAILED, "No openFood_url_file_query configuration found");
-            return;
+            return importerService.updateImporter(importer, ImportStatus.FAILED, "No openFood_url_file_query configuration found");
         }
 
         //Download each file and import it's data
-        OpenFoodApiDTO dto = new OpenFoodApiDTO();
-        importer = importerService.updateImporter(importer, ImportStatus.DOWNLOAD);
         for(String fileName : fileList){
 
+            OpenFoodApiDTO dto = new OpenFoodApiDTO();
+            importer = importerService.updateImporter(importer, ImportStatus.DOWNLOAD);
             ImporterFile importerFile = importerFileService.updateImporterFile(new ImporterFile(fileName, importer));
+
             importOpenApiArticleFile(urlFileQuery, fileName, importerFile, dto);
+            importer = importerService.updateImporter(importer, ImportStatus.IMPORT);
+            //Persisting the articles
+            openFoodArticleFactory.createOrMergeOpenApiArticleFromDto(dto.getArticles());
+
             importerFileService.updateImporterFile(importerFile);
         }
 
-        //Persisting the articles
-        importer = importerService.updateImporter(importer, ImportStatus.IMPORT);
-        openApiArticleFactory.createOrMergeOpenApiArticleFromDto(dto.getArticles());
-        importerService.updateImporter(importer, ImportStatus.SUCCESS);
+        return importerService.updateImporter(importer, ImportStatus.SUCCESS);
     }
 
     private void importOpenApiArticleFile(String urlFileQuery, String fileName, ImporterFile importerFile, OpenFoodApiDTO apiDto){
@@ -122,7 +122,7 @@ public class OpenApiImporterService {
         //Parse the line content to get usable Objects
         List<OpenFoodApiArticleDTO> newArticles = fileContentList
                 .stream()
-                .map(line -> openApiArticleFactory.getOpenFoodApiArticleFromString(line))
+                .map(line -> openFoodArticleFactory.getOpenFoodApiArticleFromString(line))
                 .filter(o -> o != null)
                 .collect(Collectors.toList());
         importerFile.setStatus(FileImportStatus.SUCCESS);

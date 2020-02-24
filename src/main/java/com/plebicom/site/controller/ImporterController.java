@@ -20,7 +20,6 @@ public class ImporterController {
 
 	@GetMapping(path="/article")
 	public @ResponseBody ResponseEntity triggerDataImport() {
-		openApiImporterService.ImportOpenArticles();
-		return ResponseEntity.ok(new ApiResponseDTO<>(null));
+		return ResponseEntity.ok(new ApiResponseDTO<>(openApiImporterService.ImportOpenArticles()));
 	}
 }
